@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dating App - Demo Tính năng Quẹt</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 10px;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        button {
+            background: #fd5068;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #e04356;
+        }
+
+        .btn-blue {
+            background: #007bff;
+        }
+
+        .btn-blue:hover {
+            background: #0056b3;
+        }
+
+        pre {
+            background: #282c34;
+            color: #61dafb;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>1. Đăng ký Tài khoản</h2>
+        <input type="text" id="fullName" placeholder="Họ và tên (VD: Quoc Anh)">
+        <div class="row">
+            <input type="number" id="age" placeholder="Tuổi (VD: 20)">
+            <input type="text" id="bio" placeholder="Tiểu sử (VD: Thích code...)">
+        </div>
+        <button onclick="registerUser()">Tạo tài khoản</button>
+        <button class="btn-blue" onclick="getUsers()">Lấy danh sách User</button>
+
+        <h2 style="margin-top: 30px;">2. Tính năng Quẹt (Swipe)</h2>
+        <div class="row">
+            <input type="number" id="swiperId" placeholder="ID của bạn">
+            <input type="number" id="swipeeId" placeholder="ID người ấy">
+        </div>
+        <select id="swipeAction">
+            <option value="like">💖 Thích (Like)</option>
+            <option value="superlike">⭐ Rất thích (Super Like)</option>
+            <option value="pass">❌ Bỏ qua (Pass)</option>
+        </select>
+        <button onclick="swipeUser()" style="background: #ff7854;">Thực hiện Quẹt!</button>
+
+        <h2 style="margin-top: 30px;">🖥️ Màn hình Console (Kết quả)</h2>
+        <pre id="result">Kết quả trả về từ Server sẽ hiển thị ở đây...</pre>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000"; // Đảm bảo FastAPI đang chạy ở cổng 8000
+
+        // Hàm hiển thị kết quả lên màn hình đen
+        function printResult(data) {
+            document.getElementById('result').innerText = JSON.stringify(data, null, 2);
+        }
+
+        // API Đăng ký
+        async function registerUser() {
+            const data = {
+                full_name: document.getElementById('fullName').value,
+                age: parseInt(document.getElementById('age').value) || 18,
+                bio: document.getElementById('bio').value
+            };
+            try {
+                const response = await fetch(`${API_URL}/users/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                printResult(await response.json());
+            } catch (error) { printResult({ error: "Lỗi kết nối Server!" }); }
+        }
+
+        // API Lấy danh sách
+        async function getUsers() {
+            try {
+                const response = await fetch(`${API_URL}/users`);
+                printResult(await response.json());
+            } catch (error) { printResult({ error: "Lỗi kết nối Server!" }); }
+        }
+
+        // API Quẹt (Swipe) - Core Logic
+        async function swipeUser() {
+            const data = {
+                swiper_id: parseInt(document.getElementById('swiperId').value),
+                swipee_id: parseInt(document.getElementById('swipeeId').value),
+                action: document.getElementById('swipeAction').value
+            };
+
+            if (!data.swiper_id || !data.swipee_id) {
+                alert("Vui lòng nhập ID hợp lệ!"); return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/swipe`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+
+                // Hiệu ứng ăn tiền khi Match thành công
+                if (result.is_match) {
+                    alert("🎉 BÙM! IT'S A MATCH!\nHai bạn đã tương hợp thành công!");
+                }
+
+                printResult(result);
+            } catch (error) { printResult({ error: "Lỗi kết nối Server!" }); }
+        }
+    </script>
+
+</body>
+
+</html>
