@@ -14,7 +14,11 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# Định nghĩa Enum
+# --- ĐỊNH NGHĨA ENUM ---
+class RoleEnum(enum.Enum):
+    admin = "admin"
+    user = "user"
+
 class GenderEnum(enum.Enum):
     male = "male"
     female = "female"
@@ -25,12 +29,13 @@ class ActionEnum(enum.Enum):
     pass_ = "pass"
     superlike = "superlike"
 
-# 2. ĐỊNH NGHĨA BẢNG (Chỉ một bản duy nhất)
+# --- ĐỊNH NGHĨA BẢNG (DATABASE MODELS) ---
 class UserDB(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(100), unique=True, index=True, nullable=False)
     hashed_password = Column(String(200), nullable=False)
+    role = Column(Enum(RoleEnum), default=RoleEnum.user)
     full_name = Column(String(100), nullable=False)
     age = Column(Integer, nullable=False)
     gender = Column(Enum(GenderEnum), default=GenderEnum.other)
@@ -77,26 +82,39 @@ class MessageDB(Base):
     
     match = relationship("MatchDB", back_populates="messages")
 
-# Chú ý: Lệnh tạo bảng phải nằm ở đây (sau khi tất cả Class đã được khai báo)
+# Tạo bảng trong Database
 Base.metadata.create_all(bind=engine)
 
-# 3. Pydantic Models (Kết nối với Frontend)
+# --- PYDANTIC MODELS (ĐỂ KIỂM TRA DỮ LIỆU ĐẦU VÀO/RA) ---
 class UserCreate(BaseModel):
+    email: str
+    password: str
     full_name: str
     age: int = 18
+    role: str = "user"
     bio: str = ""
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
 
 class UserResponse(BaseModel):
     id: int
-    full_name: str
     email: str
+    full_name: str
     age: int
     bio: str | None
+    role: RoleEnum
     
     class Config:
         from_attributes = True
 
-# 4. Khởi tạo FastAPI
+class SwipeCreate(BaseModel):
+    swiper_id: int
+    swipee_id: int
+    action: str 
+
+# --- KHỞI TẠO FASTAPI ---
 app = FastAPI(title="Dating App API")
 
 app.add_middleware(
@@ -114,51 +132,58 @@ def get_db():
     finally:
         db.close()
 
+# --- CÁC ĐƯỜNG DẪN API ---
 @app.get("/")
 def home():
-    return {"message": "FastAPI đã chạy lại thành công!"}
+    return {"message": "API Đã Sạch Lỗi và Sẵn Sàng!"}
 
 @app.post("/users/register", response_model=UserResponse)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
-    # Tự động sinh email ảo để file index.html của bạn không bị lỗi
-    fake_email = f"user_{datetime.now().timestamp()}@demo.com"
-    fake_password = "password123"
+    # Đã sửa lại logic đăng ký: dùng email/password thật và thêm role
+    try:
+        role_enum = RoleEnum(user.role.lower())
+    except ValueError:
+        role_enum = RoleEnum.user
 
     new_user = UserDB(
-        email=fake_email,
-        hashed_password=fake_password,
+        email=user.email,
+        hashed_password=user.password, # Note: Đồ án có thể lưu text thường, thực tế phải hash!
         full_name=user.full_name, 
         age=user.age, 
+        role=role_enum,
         bio=user.bio
     )
     db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
+    try:
+        db.commit()
+        db.refresh(new_user)
+        return new_user
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Email này đã tồn tại!")
+
+@app.post("/login", response_model=UserResponse)
+def login(user: UserLogin, db: Session = Depends(get_db)):
+    # Đã bổ sung API Login
+    db_user = db.query(UserDB).filter(UserDB.email == user.email).first()
+    if not db_user or db_user.hashed_password != user.password:
+        raise HTTPException(status_code=401, detail="Sai email hoặc mật khẩu!")
+    return db_user
 
 @app.get("/users", response_model=list[UserResponse])
 def get_all_users(db: Session = Depends(get_db)):
     return db.query(UserDB).all()
 
-# Model nhận dữ liệu từ client gửi lên khi quẹt
-class SwipeCreate(BaseModel):
-    swiper_id: int
-    swipee_id: int
-    action: str  # Gửi lên chữ "like", "pass", hoặc "superlike"
-
 @app.post("/swipe")
 def swipe_user(swipe: SwipeCreate, db: Session = Depends(get_db)):
-    # 1. Chặn trường hợp tự quẹt chính mình
     if swipe.swiper_id == swipe.swipee_id:
         raise HTTPException(status_code=400, detail="Không thể tự quẹt chính mình!")
     
-    # 2. Kiểm tra hành động có hợp lệ không
     try:
         action_enum = ActionEnum(swipe.action.lower())
     except ValueError:
         raise HTTPException(status_code=400, detail="Hành động chỉ được là like, pass, hoặc superlike")
 
-    # 3. Lưu lịch sử quẹt vào Database
     new_interaction = InteractionDB(
         swiper_id=swipe.swiper_id,
         swipee_id=swipe.swipee_id,
@@ -167,39 +192,25 @@ def swipe_user(swipe: SwipeCreate, db: Session = Depends(get_db)):
     db.add(new_interaction)
     db.commit()
 
-    is_match = False
-
-    # 4. Logic kiểm tra Tương hợp (Match)
     if action_enum in [ActionEnum.like, ActionEnum.superlike]:
-        # Truy vấn xem người bị quẹt (swipee) đã từng Like/SuperLike người quẹt (swiper) chưa?
         reverse_swipe = db.query(InteractionDB).filter(
             InteractionDB.swiper_id == swipe.swipee_id,
             InteractionDB.swipee_id == swipe.swiper_id,
             InteractionDB.action.in_([ActionEnum.like, ActionEnum.superlike])
         ).first()
 
-        # Nếu có tồn tại lượt quẹt ngược lại -> MATCH!
         if reverse_swipe:
-            is_match = True
-            new_match = MatchDB(
-                user1_id=swipe.swiper_id,
-                user2_id=swipe.swipee_id
-            )
+            new_match = MatchDB(user1_id=swipe.swiper_id, user2_id=swipe.swipee_id)
             db.add(new_match)
             db.commit()
-            
             return {
                 "message": "It's a Match! Hai bạn đã tương hợp.", 
                 "is_match": True,
                 "match_details": {"user1": swipe.swiper_id, "user2": swipe.swipee_id}
             }
 
-    # Nếu chỉ là quẹt bình thường, chưa match
-    return {
-        "message": "Đã ghi nhận lượt quẹt thành công.", 
-        "is_match": False
-    }
+    return {"message": "Đã ghi nhận lượt quẹt thành công.", "is_match": False}
 
-# 5. Khởi chạy
+# --- CHẠY SERVER ---
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

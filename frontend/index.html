@@ -3,48 +3,47 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Dating App - Demo Tính năng Quẹt</title>
+    <title>Dating App - Màn hình Quẹt thẻ</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f0f2f5;
-            padding: 20px;
+            display: flex;
+            justify-content: center;
+            padding-top: 30px;
+            margin: 0;
         }
 
         .container {
-            max-width: 500px;
-            margin: auto;
             background: white;
-            padding: 20px;
+            padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        h2 {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 400px;
             text-align: center;
-            color: #333;
-            border-bottom: 2px solid #f0f2f5;
-            padding-bottom: 10px;
         }
 
         input,
-        select,
-        button {
+        select {
             width: 100%;
             padding: 12px;
-            margin-bottom: 12px;
-            box-sizing: border-box;
-            border-radius: 8px;
+            margin: 10px 0;
             border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
             font-size: 14px;
         }
 
         button {
+            width: 100%;
+            padding: 12px;
             background: #fd5068;
             color: white;
-            font-weight: bold;
             border: none;
+            border-radius: 8px;
             cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
             transition: 0.3s;
         }
 
@@ -52,121 +51,288 @@
             background: #e04356;
         }
 
-        .btn-blue {
-            background: #007bff;
+        .hidden {
+            display: none !important;
         }
 
-        .btn-blue:hover {
-            background: #0056b3;
+        .admin-bg {
+            background: #2c3e50;
+            color: white;
         }
 
-        pre {
-            background: #282c34;
-            color: #61dafb;
-            padding: 15px;
+        /* CSS cho Thẻ Quẹt (Swipe Card) */
+        .swipe-card {
+            border: 1px solid #eaeaea;
+            border-radius: 15px;
+            padding: 25px 20px;
+            background: #fff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .swipe-card h3 {
+            margin: 0 0 5px 0;
+            color: #333;
+            font-size: 24px;
+        }
+
+        .swipe-card .age {
+            color: #888;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .swipe-card .bio {
+            font-style: italic;
+            color: #555;
+            background: #f9f9f9;
+            padding: 10px;
             border-radius: 8px;
-            overflow-x: auto;
-            font-size: 13px;
+            font-size: 14px;
+            min-height: 40px;
         }
 
-        .row {
+        /* CSS cho Nút Quẹt tròn */
+        .action-buttons {
             display: flex;
-            gap: 10px;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.1s;
+        }
+
+        .btn-circle:active {
+            transform: scale(0.9);
+        }
+
+        .btn-pass {
+            background: #fff;
+            color: #fd5068;
+            border: 2px solid #fd5068;
+        }
+
+        .btn-superlike {
+            background: #fff;
+            color: #3498db;
+            border: 2px solid #3498db;
+        }
+
+        .btn-like {
+            background: #fff;
+            color: #2ecc71;
+            border: 2px solid #2ecc71;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="container">
-        <h2>1. Đăng ký Tài khoản</h2>
-        <input type="text" id="fullName" placeholder="Họ và tên (VD: Quoc Anh)">
-        <div class="row">
-            <input type="number" id="age" placeholder="Tuổi (VD: 20)">
-            <input type="text" id="bio" placeholder="Tiểu sử (VD: Thích code...)">
-        </div>
-        <button onclick="registerUser()">Tạo tài khoản</button>
-        <button class="btn-blue" onclick="getUsers()">Lấy danh sách User</button>
+    <div id="auth-screen" class="container">
+        <h2 style="color: #fd5068;">Đăng Nhập</h2>
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginPass" placeholder="Mật khẩu">
+        <button onclick="handleLogin()">Đăng Nhập</button>
 
-        <h2 style="margin-top: 30px;">2. Tính năng Quẹt (Swipe)</h2>
-        <div class="row">
-            <input type="number" id="swiperId" placeholder="ID của bạn">
-            <input type="number" id="swipeeId" placeholder="ID người ấy">
-        </div>
-        <select id="swipeAction">
-            <option value="like">💖 Thích (Like)</option>
-            <option value="superlike">⭐ Rất thích (Super Like)</option>
-            <option value="pass">❌ Bỏ qua (Pass)</option>
+        <hr style="margin: 20px 0;">
+
+        <h4>Hoặc Tạo Tài Khoản Mới</h4>
+        <input type="email" id="regEmail" placeholder="Email mới">
+        <input type="password" id="regPass" placeholder="Mật khẩu mới">
+        <input type="text" id="regName" placeholder="Họ và tên">
+        <input type="text" id="regBio" placeholder="Viết vài dòng tiểu sử...">
+        <select id="regRole">
+            <option value="user">Tài khoản User (Người dùng)</option>
+            <option value="admin">Tài khoản Admin (Quản trị)</option>
         </select>
-        <button onclick="swipeUser()" style="background: #ff7854;">Thực hiện Quẹt!</button>
+        <button onclick="handleRegister()" style="background: #28a745;">Đăng Ký</button>
+    </div>
 
-        <h2 style="margin-top: 30px;">🖥️ Màn hình Console (Kết quả)</h2>
-        <pre id="result">Kết quả trả về từ Server sẽ hiển thị ở đây...</pre>
+    <div id="admin-screen" class="container admin-bg hidden">
+        <h2>🛠️ BẢNG ĐIỀU KHIỂN ADMIN</h2>
+        <p>Xin chào quản trị viên: <b id="adminName"></b></p>
+        <hr>
+        <p>Hệ thống đang hoạt động ổn định.</p>
+        <button onclick="logout()" style="background: #e74c3c; margin-top: 20px;">Đăng Xuất</button>
+    </div>
+
+    <div id="user-screen" class="container hidden">
+        <h2 style="color: #fd5068; margin-top: 0;">💖 Khám Phá</h2>
+        <p style="font-size: 14px; color: #666;">Xin chào, <b id="userName"></b>!</p>
+
+        <div id="swipe-area">
+            <div id="swipe-card" class="swipe-card">
+                <h3 id="card-name">Đang tải...</h3>
+                <div class="age" id="card-age"></div>
+                <div class="bio" id="card-bio"></div>
+
+                <div class="action-buttons">
+                    <button class="btn-circle btn-pass" onclick="handleSwipe('pass')" title="Bỏ qua">❌</button>
+                    <button class="btn-circle btn-superlike" onclick="handleSwipe('superlike')"
+                        title="Super Like">⭐</button>
+                    <button class="btn-circle btn-like" onclick="handleSwipe('like')" title="Thích">💖</button>
+                </div>
+            </div>
+
+            <div id="no-more-users" class="hidden" style="padding: 40px 0; color: #888;">
+                <h1 style="font-size: 50px; margin: 0;">📡</h1>
+                <p>Đã hết người dùng mới ở quanh bạn.<br>Hãy quay lại sau nhé!</p>
+            </div>
+        </div>
+
+        <button onclick="logout()" style="background: #f1f3f5; color: #333; margin-top: 20px;">Đăng Xuất</button>
     </div>
 
     <script>
-        const API_URL = "http://127.0.0.1:8000"; // Đảm bảo FastAPI đang chạy ở cổng 8000
+        const API_URL = "http://127.0.0.1:8000";
 
-        // Hàm hiển thị kết quả lên màn hình đen
-        function printResult(data) {
-            document.getElementById('result').innerText = JSON.stringify(data, null, 2);
+        // Biến toàn cục lưu trạng thái người dùng
+        let currentUserId = null;
+        let potentialMatches = []; // Danh sách người có thể quẹt
+        let currentMatchIndex = 0; // Vị trí thẻ đang hiển thị
+
+        function switchScreen(screenId) {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('admin-screen').classList.add('hidden');
+            document.getElementById('user-screen').classList.add('hidden');
+            document.getElementById(screenId).classList.remove('hidden');
         }
 
-        // API Đăng ký
-        async function registerUser() {
+        async function handleRegister() {
             const data = {
-                full_name: document.getElementById('fullName').value,
-                age: parseInt(document.getElementById('age').value) || 18,
-                bio: document.getElementById('bio').value
+                email: document.getElementById('regEmail').value,
+                password: document.getElementById('regPass').value,
+                full_name: document.getElementById('regName').value,
+                bio: document.getElementById('regBio').value,
+                role: document.getElementById('regRole').value,
+                age: 20
+            };
+            const res = await fetch(`${API_URL}/users/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (res.ok) alert("Đăng ký thành công! Hãy đăng nhập nhé.");
+            else alert("Lỗi đăng ký (có thể email đã tồn tại)!");
+        }
+
+        async function handleLogin() {
+            const data = {
+                email: document.getElementById('loginEmail').value,
+                password: document.getElementById('loginPass').value
             };
             try {
-                const response = await fetch(`${API_URL}/users/register`, {
+                const res = await fetch(`${API_URL}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                printResult(await response.json());
-            } catch (error) { printResult({ error: "Lỗi kết nối Server!" }); }
+
+                if (!res.ok) { alert("Sai email hoặc mật khẩu!"); return; }
+
+                const user = await res.json();
+                currentUserId = user.id; // Lưu ID của chính mình lại
+
+                if (user.role === 'admin') {
+                    document.getElementById('adminName').innerText = user.full_name;
+                    switchScreen('admin-screen');
+                } else {
+                    document.getElementById('userName').innerText = user.full_name;
+                    switchScreen('user-screen');
+                    loadMatches(); // Tải danh sách người dùng để quẹt
+                }
+            } catch (err) { alert("Không thể kết nối đến Server!"); }
         }
 
-        // API Lấy danh sách
-        async function getUsers() {
+        function logout() {
+            currentUserId = null;
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPass').value = '';
+            switchScreen('auth-screen');
+        }
+
+        // ================= LOGIC TẢI VÀ HIỂN THỊ THẺ QUẸT =================
+
+        async function loadMatches() {
             try {
-                const response = await fetch(`${API_URL}/users`);
-                printResult(await response.json());
-            } catch (error) { printResult({ error: "Lỗi kết nối Server!" }); }
+                const res = await fetch(`${API_URL}/users`);
+                const allUsers = await res.json();
+
+                // Thuật toán cơ bản: Lọc bỏ chính mình và các Admin ra khỏi danh sách gợi ý
+                potentialMatches = allUsers.filter(u => u.id !== currentUserId && u.role !== 'admin');
+                currentMatchIndex = 0;
+
+                renderCard();
+            } catch (error) {
+                console.error("Lỗi khi tải danh sách:", error);
+            }
         }
 
-        // API Quẹt (Swipe) - Core Logic
-        async function swipeUser() {
-            const data = {
-                swiper_id: parseInt(document.getElementById('swiperId').value),
-                swipee_id: parseInt(document.getElementById('swipeeId').value),
-                action: document.getElementById('swipeAction').value
-            };
+        function renderCard() {
+            const cardElement = document.getElementById('swipe-card');
+            const noUserElement = document.getElementById('no-more-users');
 
-            if (!data.swiper_id || !data.swipee_id) {
-                alert("Vui lòng nhập ID hợp lệ!"); return;
+            // Nếu đã duyệt hết danh sách
+            if (currentMatchIndex >= potentialMatches.length) {
+                cardElement.classList.add('hidden');
+                noUserElement.classList.remove('hidden');
+                return;
             }
 
+            // Hiển thị thẻ người dùng hiện tại
+            cardElement.classList.remove('hidden');
+            noUserElement.classList.add('hidden');
+
+            const user = potentialMatches[currentMatchIndex];
+            document.getElementById('card-name').innerText = user.full_name;
+            document.getElementById('card-age').innerText = `${user.age} tuổi`;
+            document.getElementById('card-bio').innerText = user.bio ? `"${user.bio}"` : "Người này chưa cập nhật tiểu sử.";
+        }
+
+        // Hàm xử lý khi bấm nút Quẹt
+        async function handleSwipe(action) {
+            const swipeeUser = potentialMatches[currentMatchIndex];
+
+            const data = {
+                swiper_id: currentUserId,
+                swipee_id: swipeeUser.id,
+                action: action
+            };
+
             try {
-                const response = await fetch(`${API_URL}/swipe`, {
+                const res = await fetch(`${API_URL}/swipe`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                const result = await response.json();
+                const result = await res.json();
 
-                // Hiệu ứng ăn tiền khi Match thành công
                 if (result.is_match) {
-                    alert("🎉 BÙM! IT'S A MATCH!\nHai bạn đã tương hợp thành công!");
+                    alert(`🎉 BÙM! IT'S A MATCH!\nBạn và ${swipeeUser.full_name} đã tương hợp thành công!`);
                 }
 
-                printResult(result);
-            } catch (error) { printResult({ error: "Lỗi kết nối Server!" }); }
+                // Chuyển sang người tiếp theo
+                currentMatchIndex++;
+                renderCard();
+
+            } catch (error) {
+                alert("Lỗi khi gửi yêu cầu quẹt!");
+            }
         }
     </script>
-
 </body>
 
 </html>
