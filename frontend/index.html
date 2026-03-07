@@ -3,336 +3,101 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Dating App - Màn hình Quẹt thẻ</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            padding-top: 30px;
-            margin: 0;
-        }
-
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            width: 400px;
-            text-align: center;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #fd5068;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 15px;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            background: #e04356;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .admin-bg {
-            background: #2c3e50;
-            color: white;
-        }
-
-        /* CSS cho Thẻ Quẹt (Swipe Card) */
-        .swipe-card {
-            border: 1px solid #eaeaea;
-            border-radius: 15px;
-            padding: 25px 20px;
-            background: #fff;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
-            transition: transform 0.3s ease;
-        }
-
-        .swipe-card h3 {
-            margin: 0 0 5px 0;
-            color: #333;
-            font-size: 24px;
-        }
-
-        .swipe-card .age {
-            color: #888;
-            font-size: 16px;
-            margin-bottom: 15px;
-        }
-
-        .swipe-card .bio {
-            font-style: italic;
-            color: #555;
-            background: #f9f9f9;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 14px;
-            min-height: 40px;
-        }
-
-        /* CSS cho Nút Quẹt tròn */
-        .action-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        .btn-circle {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.1s;
-        }
-
-        .btn-circle:active {
-            transform: scale(0.9);
-        }
-
-        .btn-pass {
-            background: #fff;
-            color: #fd5068;
-            border: 2px solid #fd5068;
-        }
-
-        .btn-superlike {
-            background: #fff;
-            color: #3498db;
-            border: 2px solid #3498db;
-        }
-
-        .btn-like {
-            background: #fff;
-            color: #2ecc71;
-            border: 2px solid #2ecc71;
-        }
-    </style>
+    <title>Dating App - Clean Code</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-    <div id="auth-screen" class="container">
-        <h2 style="color: #fd5068;">Đăng Nhập</h2>
-        <input type="email" id="loginEmail" placeholder="Email">
-        <input type="password" id="loginPass" placeholder="Mật khẩu">
-        <button onclick="handleLogin()">Đăng Nhập</button>
+    <div id="auth-screen" class="container" style="height: auto;">
+        <div id="login-form">
+            <h2 style="color: #fd5068; text-align: center;">Đăng Nhập</h2>
+            <input type="email" id="loginEmail" placeholder="Email">
+            <input type="password" id="loginPass" placeholder="Mật khẩu">
+            <button type="button" onclick="handleLogin()">Đăng Nhập</button>
+            <div class="auth-footer">Chưa có tài khoản? <span class="text-link"
+                    onclick="switchAuthView('register-step-1')">Đăng ký ngay</span></div>
+        </div>
 
-        <hr style="margin: 20px 0;">
+        <div id="register-step-1" class="hidden">
+            <h2 style="color: #fd5068; text-align: center;">Tạo Tài Khoản</h2>
+            <input type="email" id="regEmail" placeholder="Email">
+            <input type="password" id="regPass" placeholder="Mật khẩu">
+            <input type="text" id="regName" placeholder="Họ và tên">
+            <button type="button" onclick="goToRegStep2()">Tiếp tục ➡</button>
+            <div class="auth-footer"><span class="text-link" onclick="switchAuthView('login-form')">Quay lại Đăng
+                    nhập</span></div>
+        </div>
 
-        <h4>Hoặc Tạo Tài Khoản Mới</h4>
-        <input type="email" id="regEmail" placeholder="Email mới">
-        <input type="password" id="regPass" placeholder="Mật khẩu mới">
-        <input type="text" id="regName" placeholder="Họ và tên">
-        <input type="text" id="regBio" placeholder="Viết vài dòng tiểu sử...">
-        <select id="regRole">
-            <option value="user">Tài khoản User (Người dùng)</option>
-            <option value="admin">Tài khoản Admin (Quản trị)</option>
-        </select>
-        <button onclick="handleRegister()" style="background: #28a745;">Đăng Ký</button>
-    </div>
-
-    <div id="admin-screen" class="container admin-bg hidden">
-        <h2>🛠️ BẢNG ĐIỀU KHIỂN ADMIN</h2>
-        <p>Xin chào quản trị viên: <b id="adminName"></b></p>
-        <hr>
-        <p>Hệ thống đang hoạt động ổn định.</p>
-        <button onclick="logout()" style="background: #e74c3c; margin-top: 20px;">Đăng Xuất</button>
+        <div id="register-step-2" class="hidden">
+            <h2 style="color: #fd5068; text-align: center;">Hồ Sơ</h2>
+            <input type="number" id="regAge" placeholder="Tuổi (VD: 20)">
+            <select id="regGender">
+                <option value="male">Nam</option>
+                <option value="female">Nữ</option>
+            </select>
+            <input type="text" id="regBio" placeholder="Viết 1 câu giới thiệu...">
+            <button type="button" onclick="handleRegister()" style="background: #28a745;">Hoàn Tất</button>
+            <button type="button" class="btn-secondary" onclick="switchAuthView('register-step-1')">⬅ Quay lại</button>
+        </div>
     </div>
 
     <div id="user-screen" class="container hidden">
-        <h2 style="color: #fd5068; margin-top: 0;">💖 Khám Phá</h2>
-        <p style="font-size: 14px; color: #666;">Xin chào, <b id="userName"></b>!</p>
+        <div class="top-nav">
+            <button type="button" id="nav-swipe" class="active" onclick="switchAppTab('swipe')">Khám Phá</button>
+            <button type="button" id="nav-likes" onclick="switchAppTab('likes')">Lượt Thích</button>
+            <button type="button" id="nav-matches" onclick="switchAppTab('matches')">Tin Nhắn</button>
+        </div>
 
-        <div id="swipe-area">
-            <div id="swipe-card" class="swipe-card">
-                <h3 id="card-name">Đang tải...</h3>
-                <div class="age" id="card-age"></div>
-                <div class="bio" id="card-bio"></div>
-
+        <div id="tab-swipe">
+            <div id="swipe-card" class="swipe-card hidden">
+                <h2 id="card-name" style="margin: 0;">Tên</h2>
+                <p id="card-bio" style="color: #666; font-style: italic; min-height: 40px;"></p>
                 <div class="action-buttons">
-                    <button class="btn-circle btn-pass" onclick="handleSwipe('pass')" title="Bỏ qua">❌</button>
-                    <button class="btn-circle btn-superlike" onclick="handleSwipe('superlike')"
-                        title="Super Like">⭐</button>
-                    <button class="btn-circle btn-like" onclick="handleSwipe('like')" title="Thích">💖</button>
+                    <button type="button" class="btn-circle" style="color: #fd5068; border-color: #fd5068;"
+                        onclick="handleSwipe('pass')">❌</button>
+                    <button type="button" class="btn-circle" style="color: #2ecc71; border-color: #2ecc71;"
+                        onclick="handleSwipe('like')">💖</button>
                 </div>
             </div>
-
-            <div id="no-more-users" class="hidden" style="padding: 40px 0; color: #888;">
-                <h1 style="font-size: 50px; margin: 0;">📡</h1>
-                <p>Đã hết người dùng mới ở quanh bạn.<br>Hãy quay lại sau nhé!</p>
+            <div id="no-more-users" style="text-align: center; color: #888; padding-top: 50px;">
+                <h1>📡</h1>
+                <p>Đã hết người dùng mới.</p>
             </div>
         </div>
 
-        <button onclick="logout()" style="background: #f1f3f5; color: #333; margin-top: 20px;">Đăng Xuất</button>
+        <div id="tab-likes" class="hidden" style="overflow-y: auto; flex-grow: 1;">
+            <h3 style="text-align:center; color:#fd5068; margin-top: 0;">Ai đó đã thích bạn!</h3>
+            <div id="likes-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
+        </div>
+
+        <div id="tab-matches" class="hidden" style="overflow-y: auto; flex-grow: 1;">
+            <div id="match-list"></div>
+        </div>
+
+        <div id="tab-chat" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="chat-header">
+                <button type="button" class="btn-secondary" style="width: auto; padding: 5px 10px; margin: 0 10px 0 0;"
+                    onclick="switchAppTab('matches')">⬅ Back</button>
+                <b id="chat-partner-name" style="flex-grow: 1;">Chat</b>
+                <button type="button" style="background: #ff4b4b; width: auto; padding: 5px 10px; margin: 0;"
+                    onclick="unmatch()">💔 Unmatch</button>
+            </div>
+            <div class="chat-box" id="chat-box"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Nhập tin nhắn..."
+                    onkeypress="if(event.key === 'Enter') sendMessage()">
+                <button type="button" style="width: 80px; margin: 0;" onclick="sendMessage()">Gửi</button>
+            </div>
+        </div>
+
+        <button type="button" onclick="logout()" class="btn-secondary" style="margin-top: auto;">Đăng Xuất</button>
     </div>
 
-    <script>
-        const API_URL = "http://127.0.0.1:8000";
-
-        // Biến toàn cục lưu trạng thái người dùng
-        let currentUserId = null;
-        let potentialMatches = []; // Danh sách người có thể quẹt
-        let currentMatchIndex = 0; // Vị trí thẻ đang hiển thị
-
-        function switchScreen(screenId) {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('admin-screen').classList.add('hidden');
-            document.getElementById('user-screen').classList.add('hidden');
-            document.getElementById(screenId).classList.remove('hidden');
-        }
-
-        async function handleRegister() {
-            const data = {
-                email: document.getElementById('regEmail').value,
-                password: document.getElementById('regPass').value,
-                full_name: document.getElementById('regName').value,
-                bio: document.getElementById('regBio').value,
-                role: document.getElementById('regRole').value,
-                age: 20
-            };
-            const res = await fetch(`${API_URL}/users/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            if (res.ok) alert("Đăng ký thành công! Hãy đăng nhập nhé.");
-            else alert("Lỗi đăng ký (có thể email đã tồn tại)!");
-        }
-
-        async function handleLogin() {
-            const data = {
-                email: document.getElementById('loginEmail').value,
-                password: document.getElementById('loginPass').value
-            };
-            try {
-                const res = await fetch(`${API_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                if (!res.ok) { alert("Sai email hoặc mật khẩu!"); return; }
-
-                const user = await res.json();
-                currentUserId = user.id; // Lưu ID của chính mình lại
-
-                if (user.role === 'admin') {
-                    document.getElementById('adminName').innerText = user.full_name;
-                    switchScreen('admin-screen');
-                } else {
-                    document.getElementById('userName').innerText = user.full_name;
-                    switchScreen('user-screen');
-                    loadMatches(); // Tải danh sách người dùng để quẹt
-                }
-            } catch (err) { alert("Không thể kết nối đến Server!"); }
-        }
-
-        function logout() {
-            currentUserId = null;
-            document.getElementById('loginEmail').value = '';
-            document.getElementById('loginPass').value = '';
-            switchScreen('auth-screen');
-        }
-
-        // ================= LOGIC TẢI VÀ HIỂN THỊ THẺ QUẸT =================
-
-        async function loadMatches() {
-            try {
-                const res = await fetch(`${API_URL}/users`);
-                const allUsers = await res.json();
-
-                // Thuật toán cơ bản: Lọc bỏ chính mình và các Admin ra khỏi danh sách gợi ý
-                potentialMatches = allUsers.filter(u => u.id !== currentUserId && u.role !== 'admin');
-                currentMatchIndex = 0;
-
-                renderCard();
-            } catch (error) {
-                console.error("Lỗi khi tải danh sách:", error);
-            }
-        }
-
-        function renderCard() {
-            const cardElement = document.getElementById('swipe-card');
-            const noUserElement = document.getElementById('no-more-users');
-
-            // Nếu đã duyệt hết danh sách
-            if (currentMatchIndex >= potentialMatches.length) {
-                cardElement.classList.add('hidden');
-                noUserElement.classList.remove('hidden');
-                return;
-            }
-
-            // Hiển thị thẻ người dùng hiện tại
-            cardElement.classList.remove('hidden');
-            noUserElement.classList.add('hidden');
-
-            const user = potentialMatches[currentMatchIndex];
-            document.getElementById('card-name').innerText = user.full_name;
-            document.getElementById('card-age').innerText = `${user.age} tuổi`;
-            document.getElementById('card-bio').innerText = user.bio ? `"${user.bio}"` : "Người này chưa cập nhật tiểu sử.";
-        }
-
-        // Hàm xử lý khi bấm nút Quẹt
-        async function handleSwipe(action) {
-            const swipeeUser = potentialMatches[currentMatchIndex];
-
-            const data = {
-                swiper_id: currentUserId,
-                swipee_id: swipeeUser.id,
-                action: action
-            };
-
-            try {
-                const res = await fetch(`${API_URL}/swipe`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                const result = await res.json();
-
-                if (result.is_match) {
-                    alert(`🎉 BÙM! IT'S A MATCH!\nBạn và ${swipeeUser.full_name} đã tương hợp thành công!`);
-                }
-
-                // Chuyển sang người tiếp theo
-                currentMatchIndex++;
-                renderCard();
-
-            } catch (error) {
-                alert("Lỗi khi gửi yêu cầu quẹt!");
-            }
-        }
-    </script>
+    <script src="source/config.js"></script>
+    <script src="source/ui.js"></script>
+    <script src="source/auth.js"></script>
+    <script src="source/app.js"></script>
 </body>
 
 </html>
