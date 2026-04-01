@@ -67,6 +67,10 @@ class PairDB(Base):
     is_match = Column(Boolean, default=False) # Đã Match chưa?
     matched_at = Column(DateTime, nullable=True)
 
+class PasswordReset(BaseModel):
+    email: str
+    new_password: str
+
 class MessageDB(Base):
     __tablename__ = "messages"
     id = Column(Integer, primary_key=True, index=True)
@@ -159,6 +163,20 @@ def swipe_user(swipe: SwipeCreate, db: Session = Depends(get_db)):
 
     db.commit()
     return {"message": "It's a Match!" if is_match else "Đã ghi nhận", "is_match": is_match}
+
+@app.post("/users/reset-password")
+def reset_password(data: PasswordReset, db: Session = Depends(get_db)):
+    # Tìm user có email tương ứng
+    user = db.query(UserDB).filter(UserDB.email == data.email).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản với email này!")
+    
+    # Ghi đè mật khẩu mới và lưu lại
+    user.hashed_password = data.new_password
+    db.commit()
+    
+    return {"message": "Đổi mật khẩu thành công!"}
 
 @app.get("/users/suggestions/{user_id}", response_model=list[UserResponse])
 def get_suggestions(user_id: int, db: Session = Depends(get_db)):

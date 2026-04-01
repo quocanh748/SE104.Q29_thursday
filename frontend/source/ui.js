@@ -11,5 +11,9 @@ function switchAuthView(viewId) {
     document.getElementById('register-step-1').classList.add('hidden');
     document.getElementById('register-step-2').classList.add('hidden');
 
+    // Thêm dòng này để ẩn form quên mật khẩu
+    const forgotForm = document.getElementById('forgot-password-form');
+    if (forgotForm) forgotForm.classList.add('hidden');
+
     document.getElementById(viewId).classList.remove('hidden');
 }

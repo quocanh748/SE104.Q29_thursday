@@ -28,7 +28,16 @@
                 <div class="auth-footer">Chưa có tài khoản? <span class="text-link"
                         onclick="switchAuthView('register-step-1')">Đăng ký ngay</span></div>
             </div>
-
+            <div id="forgot-password-form" class="hidden">
+                <h2>Khôi Phục Mật Khẩu</h2>
+                <p style="text-align:center; color:var(--text-dim); margin-bottom:1rem; font-size:0.9rem;">Nhập email
+                    của bạn để đặt lại mật khẩu mới.</p>
+                <input type="email" id="resetEmail" placeholder="Email đã đăng ký">
+                <input type="password" id="resetPass" placeholder="Mật khẩu mới (ít nhất 6 ký tự)">
+                <button type="button" onclick="handleResetPassword()" style="background: #e67e22;">Đổi Mật Khẩu</button>
+                <div class="auth-footer"><span class="text-link" onclick="switchAuthView('login-form')">⬅ Quay lại Đăng
+                        nhập</span></div>
+            </div>
             <!-- FORM: REGISTER STEP 1 -->
             <div id="register-step-1" class="hidden">
                 <h2>Tạo Tài Khoản</h2>
@@ -51,7 +60,8 @@
                 </select>
                 <input type="text" id="regBio" placeholder="Viết 1 câu giới thiệu về bạn...">
                 <button type="button" onclick="handleRegister()" style="background: #2ecc71;">Hoàn Tất</button>
-                <button type="button" class="btn-secondary" onclick="switchAuthView('register-step-1')">⬅ Quay lại</button>
+                <button type="button" class="btn-secondary" onclick="switchAuthView('register-step-1')">⬅ Quay
+                    lại</button>
             </div>
 
         </div>
@@ -127,13 +137,15 @@
             <!-- TAB: CHAT INTERFACE -->
             <section id="tab-chat" class="hidden">
                 <div class="chat-header">
-                    <button type="button" class="btn-secondary" style="width: auto; padding: 10px 20px; font-size: 0.9rem;"
-                        onclick="switchAppTab('matches')">⬅ Quay lại</button>
+                    <button type="button" class="btn-secondary"
+                        style="width: auto; padding: 10px 20px; font-size: 0.9rem;" onclick="switchAppTab('matches')">⬅
+                        Quay lại</button>
                     <div style="flex-grow: 1; text-align: center;">
                         <h3 id="chat-partner-name" style="margin: 0;">Partner Name</h3>
                         <span style="font-size: 0.8rem; color: #2ecc71;">Đang trực tuyến</span>
                     </div>
-                    <button type="button" style="background: #ff4b4b; width: auto; padding: 10px 20px; font-size: 0.9rem;"
+                    <button type="button"
+                        style="background: #ff4b4b; width: auto; padding: 10px 20px; font-size: 0.9rem;"
                         onclick="unmatch()">💔 Hủy Match</button>
                 </div>
 

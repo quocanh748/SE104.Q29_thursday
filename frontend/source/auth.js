@@ -130,3 +130,45 @@ function logout() {
     switchScreen('auth-screen');
     switchAuthView('login-form');
 }
+
+// Xử lý Quên Mật Khẩu
+async function handleResetPassword() {
+    const email = document.getElementById('resetEmail').value.trim();
+    const newPass = document.getElementById('resetPass').value;
+
+    if (!email || !newPass) {
+        alert("⚠️ Vui lòng nhập đầy đủ email và mật khẩu mới!");
+        return;
+    }
+
+    if (!emailRegex.test(email)) {
+        alert("⚠️ Định dạng email không hợp lệ!");
+        return;
+    }
+
+    if (newPass.length < 6) {
+        alert("⚠️ Mật khẩu mới phải có ít nhất 6 ký tự!");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/users/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, new_password: newPass })
+        });
+
+        if (res.ok) {
+            alert("✅ Đổi mật khẩu thành công! Hãy đăng nhập lại bằng mật khẩu mới nhé.");
+            // Xóa rỗng ô nhập và quay về trang đăng nhập
+            document.getElementById('resetEmail').value = '';
+            document.getElementById('resetPass').value = '';
+            switchAuthView('login-form');
+        } else {
+            const errorData = await res.json();
+            alert(`❌ Lỗi: ${errorData.detail}`);
+        }
+    } catch (err) {
+        alert("📡 Lỗi kết nối đến Server!");
+    }
+}
