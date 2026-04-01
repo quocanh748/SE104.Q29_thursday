@@ -1,0 +1,8 @@
+# Bỏ qua các file nặng của Node.js và file chạy
+node_modules/
+dist/
+*.exe
+
+# Bỏ qua thư mục ảo của Python (nếu có)
+venv/
+__pycache__/
