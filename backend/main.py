@@ -1,29 +1,27 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Enum, create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker, Session, relationship
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Enum, Boolean, create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from pydantic import BaseModel
 from datetime import datetime
 import enum
 import uvicorn
 
-# 2. CẤU HÌNH DATABASE
+# 1. CẤU HÌNH DATABASE
 SQLALCHEMY_DATABASE_URL = "sqlite:///./database/dating_app.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# 3. ĐỊNH NGHĨA ENUMS
 class RoleEnum(enum.Enum):
     admin, user = "admin", "user"
 
 class GenderEnum(enum.Enum):
     male, female, other = "male", "female", "other"
 
-class ActionEnum(enum.Enum):
-    like, pass_, superlike = "like", "pass", "superlike"
-
-# 4. DATABASE MODELS (BẢNG TRONG CSDL)
+# ==========================================
+# 2. DATABASE MODELS (ÁP DỤNG IDEAS "PAIR ID")
+# ==========================================
 class UserDB(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -36,66 +34,48 @@ class UserDB(Base):
     bio = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-class InteractionDB(Base):
-    __tablename__ = "interactions"
-    id = Column(Integer, primary_key=True, index=True)
-    swiper_id = Column(Integer, ForeignKey("users.id"))
-    swipee_id = Column(Integer, ForeignKey("users.id"))
-    action = Column(Enum(ActionEnum), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-class MatchDB(Base):
-    __tablename__ = "matches"
-    id = Column(Integer, primary_key=True, index=True)
-    user1_id = Column(Integer, ForeignKey("users.id"))
-    user2_id = Column(Integer, ForeignKey("users.id"))
-    matched_at = Column(DateTime, default=datetime.utcnow)
+# BẢNG THẦN THÁNH: PAIR (Thay thế cho Interaction và Match)
+class PairDB(Base):
+    __tablename__ = "pairs"
+    id = Column(Integer, primary_key=True, index=True) # Vẫn giữ ID số nguyên để Frontend dễ xử lý
+    
+    # Cột "AB" theo ý tưởng của bạn (VD: "1_2")
+    pair_key = Column(String(50), unique=True, index=True, nullable=False) 
+    
+    user1_id = Column(Integer, ForeignKey("users.id")) # Luôn lưu ID nhỏ hơn
+    user2_id = Column(Integer, ForeignKey("users.id")) # Luôn lưu ID lớn hơn
+    
+    action_user1 = Column(String(20), nullable=True) # Hành động của người số 1 (like/pass)
+    action_user2 = Column(String(20), nullable=True) # Hành động của người số 2 (like/pass)
+    
+    is_match = Column(Boolean, default=False) # Đã Match chưa?
+    matched_at = Column(DateTime, nullable=True)
 
 class MessageDB(Base):
     __tablename__ = "messages"
     id = Column(Integer, primary_key=True, index=True)
-    match_id = Column(Integer, ForeignKey("matches.id"))
+    match_id = Column(Integer, ForeignKey("pairs.id")) # Trỏ thẳng về ID của bảng Pair
     sender_id = Column(Integer, ForeignKey("users.id"))
     content = Column(Text, nullable=False)
     sent_at = Column(DateTime, default=datetime.utcnow)
 
-# Tạo các bảng
 Base.metadata.create_all(bind=engine)
 
-# 5. PYDANTIC MODELS (KIỂM TRA DỮ LIỆU)
+# ==========================================
+# 3. PYDANTIC MODELS & KHỞI TẠO APP
+# ==========================================
 class UserCreate(BaseModel):
-    email: str
-    password: str
-    full_name: str
-    age: int = 18
-    gender: str = "other"
-    role: str = "user"
-    bio: str = ""
-
+    email: str; password: str; full_name: str; age: int = 18; gender: str = "other"; role: str = "user"; bio: str = ""
 class UserLogin(BaseModel):
-    email: str
-    password: str
-
+    email: str; password: str
 class UserResponse(BaseModel):
-    id: int
-    email: str
-    full_name: str
-    age: int
-    bio: str | None
-    role: RoleEnum
+    id: int; email: str; full_name: str; age: int; bio: str | None; role: RoleEnum
     class Config: from_attributes = True
-
 class SwipeCreate(BaseModel):
-    swiper_id: int
-    swipee_id: int
-    action: str 
-
+    swiper_id: int; swipee_id: int; action: str 
 class MessageCreate(BaseModel):
-    match_id: int
-    sender_id: int
-    content: str
+    match_id: int; sender_id: int; content: str
 
-# 6. KHỞI TẠO ỨNG DỤNG & MIDDLEWARE
 app = FastAPI(title="Dating App API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
@@ -104,11 +84,9 @@ def get_db():
     try: yield db
     finally: db.close()
 
-# 7. ROUTERS (API ENDPOINTS)
-@app.get("/")
-def home(): return {"status": "API is running cleanly!"}
-
-# --- AUTH & USERS ---
+# ==========================================
+# 4. API ENDPOINTS
+# ==========================================
 @app.post("/users/register", response_model=UserResponse)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     try: role_enum = RoleEnum(user.role.lower())
@@ -116,15 +94,10 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     try: gender_enum = GenderEnum(user.gender.lower())
     except: gender_enum = GenderEnum.other
 
-    new_user = UserDB(
-        email=user.email, hashed_password=user.password, full_name=user.full_name, 
-        age=user.age, gender=gender_enum, role=role_enum, bio=user.bio
-    )
+    new_user = UserDB(email=user.email, hashed_password=user.password, full_name=user.full_name, age=user.age, gender=gender_enum, role=role_enum, bio=user.bio)
     db.add(new_user)
     try:
-        db.commit()
-        db.refresh(new_user)
-        return new_user
+        db.commit(); db.refresh(new_user); return new_user
     except Exception:
         db.rollback()
         raise HTTPException(status_code=400, detail="Email đã tồn tại!")
@@ -132,93 +105,114 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
 @app.post("/login", response_model=UserResponse)
 def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(UserDB).filter(UserDB.email == user.email).first()
-    if not db_user or db_user.hashed_password != user.password:
-        raise HTTPException(status_code=401, detail="Sai thông tin đăng nhập!")
+    if not db_user or db_user.hashed_password != user.password: raise HTTPException(status_code=401)
     return db_user
 
-@app.get("/users/suggestions/{user_id}", response_model=list[UserResponse])
-def get_suggestions(user_id: int, db: Session = Depends(get_db)):
-    # 1. Những người mình ĐÃ quẹt (dù like hay pass)
-    swiped_by_me = db.query(InteractionDB.swipee_id).filter(InteractionDB.swiper_id == user_id).all()
-    swiped_ids = [r[0] for r in swiped_by_me]
-
-    # 2. Những người ĐÃ Like/SuperLike mình (chuyển họ sang tab Lượt Thích)
-    liked_me = db.query(InteractionDB.swiper_id).filter(
-        InteractionDB.swipee_id == user_id,
-        InteractionDB.action.in_([ActionEnum.like, ActionEnum.superlike])
-    ).all()
-    liked_me_ids = [r[0] for r in liked_me]
-
-    # Gộp 2 danh sách lại và thêm chính mình vào để loại trừ
-    exclude_ids = list(set(swiped_ids + liked_me_ids + [user_id]))
-
-    return db.query(UserDB).filter(UserDB.id.notin_(exclude_ids), UserDB.role == RoleEnum.user).all()
-
-# THÊM MỚI API Lượt Thích: Danh sách những người đang "thầm thương trộm nhớ" mình
-@app.get("/users/likes-me/{user_id}", response_model=list[UserResponse])
-def get_likes_me(user_id: int, db: Session = Depends(get_db)):
-    # Tìm những ID đã Like/SuperLike mình
-    liked_me = db.query(InteractionDB.swiper_id).filter(
-        InteractionDB.swipee_id == user_id,
-        InteractionDB.action.in_([ActionEnum.like, ActionEnum.superlike])
-    ).all()
-    liked_me_ids = [r[0] for r in liked_me]
-
-    # Nhưng phải loại trừ những người mà mình đã quẹt rồi (vì nếu mình quẹt rồi thì 1 là Match, 2 là Miss)
-    swiped_by_me = db.query(InteractionDB.swipee_id).filter(InteractionDB.swiper_id == user_id).all()
-    swiped_ids = [r[0] for r in swiped_by_me]
-
-    # Lọc ra những ID hợp lệ (Đã like mình VÀ mình chưa quẹt họ)
-    valid_ids = [uid for uid in liked_me_ids if uid not in swiped_ids]
-
-    return db.query(UserDB).filter(UserDB.id.in_(valid_ids)).all()
-
-# --- SWIPE & MATCHES ---
+# ------------------------------------------
+# PHẦN LÕI: LOGIC QUẸT THẺ ÁP DỤNG "PAIR ID"
+# ------------------------------------------
 @app.post("/swipe")
 def swipe_user(swipe: SwipeCreate, db: Session = Depends(get_db)):
     if swipe.swiper_id == swipe.swipee_id:
         raise HTTPException(status_code=400, detail="Không thể tự quẹt mình!")
-    try: action_enum = ActionEnum(swipe.action.lower())
-    except: raise HTTPException(status_code=400, detail="Hành động không hợp lệ")
+    
+    # 1. TẠO "CỘT AB" (Pair Key) - ID nhỏ đứng trước, ID lớn đứng sau
+    u1, u2 = sorted([swipe.swiper_id, swipe.swipee_id])
+    pair_key = f"{u1}_{u2}"
 
-    db.add(InteractionDB(swiper_id=swipe.swiper_id, swipee_id=swipe.swipee_id, action=action_enum))
+    # 2. TÌM KIẾM DỮ LIỆU CỦA CẶP NÀY (Chỉ O(1) thao tác)
+    pair = db.query(PairDB).filter(PairDB.pair_key == pair_key).first()
+    
+    # Nếu hai người chưa từng tương tác bao giờ -> Tạo dòng mới
+    if not pair:
+        pair = PairDB(pair_key=pair_key, user1_id=u1, user2_id=u2)
+        db.add(pair)
+
+    # 3. CẬP NHẬT HÀNH ĐỘNG CỦA MÌNH VÀO CỘT TƯƠNG ỨNG
+    if swipe.swiper_id == u1:
+        pair.action_user1 = swipe.action.lower()
+    else:
+        pair.action_user2 = swipe.action.lower()
+
+    # 4. KIỂM TRA MATCH: Chỉ việc xem 2 cột trên cùng 1 dòng
+    is_match = False
+    if pair.action_user1 in ['like', 'superlike'] and pair.action_user2 in ['like', 'superlike']:
+        pair.is_match = True
+        pair.matched_at = datetime.utcnow()
+        is_match = True
+
     db.commit()
+    return {"message": "It's a Match!" if is_match else "Đã ghi nhận", "is_match": is_match}
 
-    if action_enum in [ActionEnum.like, ActionEnum.superlike]:
-        reverse = db.query(InteractionDB).filter(
-            InteractionDB.swiper_id == swipe.swipee_id, InteractionDB.swipee_id == swipe.swiper_id,
-            InteractionDB.action.in_([ActionEnum.like, ActionEnum.superlike])
-        ).first()
-        if reverse:
-            db.add(MatchDB(user1_id=swipe.swiper_id, user2_id=swipe.swipee_id))
-            db.commit()
-            return {"message": "It's a Match!", "is_match": True}
-    return {"message": "Đã ghi nhận", "is_match": False}
+@app.get("/users/suggestions/{user_id}", response_model=list[UserResponse])
+def get_suggestions(user_id: int, db: Session = Depends(get_db)):
+    # Lấy tất cả các cặp có dính líu đến user_id
+    pairs = db.query(PairDB).filter((PairDB.user1_id == user_id) | (PairDB.user2_id == user_id)).all()
+    
+    exclude_ids = [user_id]
+    for p in pairs:
+        # Nếu đã Match thì loại bỏ
+        if p.is_match:
+            exclude_ids.extend([p.user1_id, p.user2_id])
+            continue
+            
+        # Nếu mình là user1 và ĐÃ hành động -> Không hiện người kia nữa
+        if p.user1_id == user_id and p.action_user1 is not None:
+            exclude_ids.append(p.user2_id)
+        # Nếu mình là user2 và ĐÃ hành động -> Không hiện người kia nữa
+        elif p.user2_id == user_id and p.action_user2 is not None:
+            exclude_ids.append(p.user1_id)
+            
+        # Nếu người kia ĐÃ LIKE mình -> Đưa họ qua Tab Lượt Thích, xóa khỏi Khám phá
+        if p.user1_id == user_id and p.action_user2 in ['like', 'superlike']:
+            exclude_ids.append(p.user2_id)
+        elif p.user2_id == user_id and p.action_user1 in ['like', 'superlike']:
+            exclude_ids.append(p.user1_id)
+
+    return db.query(UserDB).filter(UserDB.id.notin_(list(set(exclude_ids))), UserDB.role == RoleEnum.user).all()
+
+@app.get("/users/likes-me/{user_id}", response_model=list[UserResponse])
+def get_likes_me(user_id: int, db: Session = Depends(get_db)):
+    pairs = db.query(PairDB).filter((PairDB.user1_id == user_id) | (PairDB.user2_id == user_id)).all()
+    
+    likes_me_ids = []
+    for p in pairs:
+        # TÌM NHỮNG NGƯỜI ĐÃ LIKE MÌNH VÀ MÌNH CHƯA PHẢN HỒI (Hành động của mình là None)
+        if p.user1_id == user_id and p.action_user2 in ['like', 'superlike'] and p.action_user1 is None:
+            likes_me_ids.append(p.user2_id)
+        elif p.user2_id == user_id and p.action_user1 in ['like', 'superlike'] and p.action_user2 is None:
+            likes_me_ids.append(p.user1_id)
+            
+    return db.query(UserDB).filter(UserDB.id.in_(likes_me_ids)).all()
 
 @app.get("/matches/{user_id}")
 def get_user_matches(user_id: int, db: Session = Depends(get_db)):
-    matches = db.query(MatchDB).filter((MatchDB.user1_id == user_id) | (MatchDB.user2_id == user_id)).all()
+    # Tìm các cặp đã is_match = True
+    pairs = db.query(PairDB).filter(((PairDB.user1_id == user_id) | (PairDB.user2_id == user_id)), PairDB.is_match == True).all()
+    
     result = []
-    for m in matches:
-        other_id = m.user2_id if m.user1_id == user_id else m.user1_id
+    for p in pairs:
+        other_id = p.user2_id if p.user1_id == user_id else p.user1_id
         other_user = db.query(UserDB).filter(UserDB.id == other_id).first()
-        if other_user: result.append({"match_id": m.id, "other_user_id": other_user.id, "other_user_name": other_user.full_name})
+        if other_user: result.append({"match_id": p.id, "other_user_id": other_user.id, "other_user_name": other_user.full_name})
     return result
 
 @app.delete("/matches/{match_id}")
 def unmatch_user(match_id: int, db: Session = Depends(get_db)):
-    match = db.query(MatchDB).filter(MatchDB.id == match_id).first()
-    if not match: raise HTTPException(status_code=404)
+    pair = db.query(PairDB).filter(PairDB.id == match_id).first()
+    if not pair: raise HTTPException(status_code=404)
+    
+    # Xóa tin nhắn
     db.query(MessageDB).filter(MessageDB.match_id == match_id).delete()
-    db.query(InteractionDB).filter(
-        ((InteractionDB.swiper_id == match.user1_id) & (InteractionDB.swipee_id == match.user2_id)) |
-        ((InteractionDB.swiper_id == match.user2_id) & (InteractionDB.swipee_id == match.user1_id))
-    ).delete()
-    db.delete(match)
+    
+    # Hủy tương hợp: Xóa lịch sử quẹt của cả 2 để họ thành người dưng (reset dòng này)
+    pair.action_user1 = None
+    pair.action_user2 = None
+    pair.is_match = False
+    pair.matched_at = None
     db.commit()
     return {"message": "Hủy thành công"}
 
-# --- MESSAGING ---
 @app.post("/messages")
 def send_message(msg: MessageCreate, db: Session = Depends(get_db)):
     db.add(MessageDB(match_id=msg.match_id, sender_id=msg.sender_id, content=msg.content))

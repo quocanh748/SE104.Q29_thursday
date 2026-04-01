@@ -1,214 +1,405 @@
-body {
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    background: #f0f2f5;
-    display: flex;
-    justify-content: center;
-    padding-top: 30px;
+/* CSS Moderno for PC - Dating App */
+:root {
+    --primary: #ff4757;
+    --primary-gradient: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --text-main: #f1f2f6;
+    --text-dim: #94a3b8;
+    --accent: #7d5fff;
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+* {
     margin: 0;
-}
-
-.container {
-    background: white;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    width: 400px;
-    height: 680px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-}
-
-input,
-select {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    padding: 0;
     box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    line-height: 1.6;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* Utility Classes */
+.hidden { display: none !important; }
+
+/* -------------------------------------------
+   AUTHENTICATION SCREEN (PC Centered)
+   ------------------------------------------- */
+#auth-screen {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at top left, #2c1654 0%, #0f172a 50%);
+}
+
+.auth-card {
+    background: var(--bg-card);
+    padding: 3rem;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+}
+
+.auth-card h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+    font-weight: 800;
+}
+
+input, select {
+    width: 100%;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+input:focus {
+    border-color: var(--primary);
+    outline: none;
+    background: rgba(0, 0, 0, 0.3);
 }
 
 button {
     width: 100%;
-    padding: 12px;
-    background: #fd5068;
-    color: white;
+    padding: 1rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
     cursor: pointer;
-    font-weight: bold;
-    margin-top: 10px;
-    transition: 0.2s;
+    transition: transform 0.2s, opacity 0.2s;
+    background: var(--primary-gradient);
+    color: white;
 }
 
 button:hover {
-    background: #e04356;
+    transform: translateY(-2px);
+    opacity: 0.9;
 }
 
 .btn-secondary {
-    background: #f1f3f5;
-    color: #333;
-}
-
-.hidden {
-    display: none !important;
-}
-
-/* 2. Màn hình Đăng nhập / Đăng ký */
-.text-link {
-    color: #fd5068;
-    cursor: pointer;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.text-link:hover {
-    text-decoration: underline;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    margin-top: 10px;
 }
 
 .auth-footer {
     text-align: center;
-    margin-top: 20px;
-    font-size: 14px;
-    color: #666;
+    margin-top: 1.5rem;
+    color: var(--text-dim);
 }
 
-/* 3. Giao diện App - Thanh điều hướng */
-.top-nav {
+.text-link {
+    color: var(--primary);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* -------------------------------------------
+   MAIN APP LAYOUT (PC Sidebar Structure)
+   ------------------------------------------- */
+#user-screen {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: 100vh;
+}
+
+/* Sidebar Nav */
+.sidebar {
+    background: var(--bg-card);
+    border-right: 1px solid var(--glass-border);
     display: flex;
-    justify-content: space-around;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 15px;
+    flex-direction: column;
+    padding: 2rem 1rem;
+    z-index: 10;
 }
 
-.top-nav button {
-    background: none;
-    color: #aaa;
-    width: auto;
-    padding: 5px 10px;
-    font-size: 16px;
-    margin: 0;
+.brand {
+    font-size: 1.8rem;
+    font-weight: 900;
+    margin-bottom: 3rem;
+    padding-left: 1rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-.top-nav button.active {
-    color: #fd5068;
-    border-bottom: 2px solid #fd5068;
-}
-
-/* 4. Tab Khám Phá (Quẹt Thẻ) */
-.swipe-card {
-    border: 1px solid #eaeaea;
-    border-radius: 15px;
-    padding: 25px 20px;
-    background: #fff;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-    text-align: center;
-}
-
-.action-buttons {
+.nav-links {
     display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-grow: 1;
+}
+
+.nav-item {
+    padding: 1rem 1.5rem;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-item:hover {
+    background: var(--glass);
+    color: white;
+}
+
+.nav-item.active {
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 10px 20px -5px rgba(255, 71, 87, 0.4);
+}
+
+.logout-container {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--glass-border);
+}
+
+/* Main Content Area */
+.main-content {
+    background: var(--bg-dark);
+    position: relative;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+/* -------------------------------------------
+   COMPONENTS
+   ------------------------------------------- */
+
+/* Swipe Card Section */
+#tab-swipe {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    gap: 15px;
-    margin-top: 25px;
 }
 
-.btn-circle {
+.swipe-card {
+    background: var(--bg-card);
+    width: 100%;
+    max-width: 480px;
+    padding: 0;
+    border-radius: 32px;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
+    position: relative;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.card-img-placeholder {
+    height: 350px;
+    background: linear-gradient(to bottom, #4776E6, #8E54E9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+}
+
+.card-info {
+    padding: 2rem;
+    text-align: left;
+}
+
+.card-info h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-info p {
+    color: var(--text-dim);
+    font-size: 1.1rem;
+    font-style: italic;
+}
+
+.swipe-actions {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0 2rem 2.5rem;
+    justify-content: center;
+}
+
+.btn-action {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: var(--bg-dark);
+    border: 2px solid var(--glass-border);
+    padding: 0;
+}
+
+.btn-action:hover {
+    transform: scale(1.15);
+}
+
+.btn-pass:hover { border-color: #636e72; color: #636e72; box-shadow: 0 0 20px rgba(99, 110, 114, 0.2); }
+.btn-like:hover { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 20px rgba(255, 71, 87, 0.3); }
+
+/* Likes List & Matches */
+#likes-list, #match-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding-top: 1rem;
+}
+
+.user-card-horizontal {
+    background: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    transition: all 0.3s;
+}
+
+.user-card-horizontal:hover {
+    background: var(--glass);
+    transform: translateY(-4px);
+    border-color: var(--primary);
+}
+
+.avatar-mini {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    font-size: 24px;
-    cursor: pointer;
-    border: 2px solid #ddd;
-    background: #fff;
+    background: var(--primary-gradient);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.1s;
+    font-size: 1.5rem;
+    font-weight: 800;
 }
 
-.btn-circle:active {
-    transform: scale(0.9);
+.card-details {
+    flex-grow: 1;
 }
 
-/* 5. Tab Tin Nhắn & Lượt Thích */
-.match-item {
+.card-details b { font-size: 1.2rem; }
+.card-details i { color: var(--text-dim); font-size: 0.9rem; }
+
+/* -------------------------------------------
+   CHAT SECTION
+   ------------------------------------------- */
+#tab-chat {
+    flex-grow: 1;
     display: flex;
-    align-items: center;
-    padding: 15px;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-    transition: background 0.2s;
+    flex-direction: column;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
 }
 
-.match-item:hover {
-    background: #f9f9f9;
-}
-
-.match-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: #fd5068;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 20px;
-    margin-right: 15px;
-}
-
-/* 6. Phòng Chat */
 .chat-header {
     display: flex;
     align-items: center;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 10px;
+    padding: 1.5rem;
+    background: var(--bg-card);
+    border-radius: 20px 20px 0 0;
+    border: 1px solid var(--glass-border);
 }
 
 .chat-box {
     flex-grow: 1;
-    overflow-y: auto;
-    padding: 10px;
+    background: rgba(0, 0, 0, 0.1);
+    border-left: 1px solid var(--glass-border);
+    border-right: 1px solid var(--glass-border);
+    padding: 2rem;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    background: #fafafa;
-    border-radius: 8px;
-    margin-bottom: 10px;
+    gap: 1rem;
+    overflow-y: auto;
 }
 
 .msg {
-    max-width: 70%;
-    padding: 10px 15px;
+    max-width: 60%;
+    padding: 1rem 1.5rem;
     border-radius: 20px;
-    font-size: 14px;
-    word-wrap: break-word;
+    font-size: 1rem;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .msg-me {
-    background: #fd5068;
+    background: var(--primary-gradient);
     color: white;
     align-self: flex-end;
-    border-bottom-right-radius: 2px;
+    border-bottom-right-radius: 4px;
 }
 
 .msg-them {
-    background: #e4e6eb;
-    color: black;
+    background: var(--bg-card);
+    color: white;
     align-self: flex-start;
-    border-bottom-left-radius: 2px;
+    border-bottom-left-radius: 4px;
+    border: 1px solid var(--glass-border);
 }
 
 .chat-input-area {
+    padding: 1.5rem;
+    background: var(--bg-card);
+    border-radius: 0 0 20px 20px;
     display: flex;
-    gap: 10px;
+    gap: 1rem;
+    border: 1px solid var(--glass-border);
 }
 
-.chat-input-area input {
-    margin: 0;
+.chat-input-area input { margin-bottom: 0; }
+.chat-input-area button { width: 120px; }
+
+/* Empty States */
+#no-more-users, .empty-state {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 5rem 0;
 }
+
+#no-more-users h1 { font-size: 5rem; margin-bottom: 1rem; opacity: 0.5; }

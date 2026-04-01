@@ -35,9 +35,7 @@ function switchAppTab(tabName) {
     }
 }
 
-// =====================================
 // 1. NGHIỆP VỤ QUẸT THẺ (Khám phá)
-// =====================================
 async function loadSwipeUsers() {
     try {
         const res = await fetch(`${API_URL}/users/suggestions/${currentUserId}`);
@@ -72,9 +70,7 @@ async function handleSwipe(action) {
     } catch (e) { alert("Lỗi hệ thống quẹt!"); }
 }
 
-// =====================================
 // 2. NGHIỆP VỤ "LƯỢT THÍCH" (Mới thêm)
-// =====================================
 async function loadLikesMe() {
     try {
         const res = await fetch(`${API_URL}/users/likes-me/${currentUserId}`);
@@ -89,15 +85,17 @@ async function loadLikesMe() {
 
         // Tạo thẻ cho từng người đã thích mình
         users.forEach(u => {
+            const initial = u.full_name.charAt(0).toUpperCase();
             listDiv.innerHTML += `
-                <div style="border: 1px solid #eee; border-radius: 10px; padding: 15px; display: flex; justify-content: space-between; align-items: center; background: #fff;">
-                    <div>
-                        <b style="font-size:16px;">${u.full_name}, ${u.age}</b><br>
-                        <i style="color:#666; font-size:13px;">"${u.bio}"</i>
+                <div class="user-card-horizontal">
+                    <div class="avatar-mini">${initial}</div>
+                    <div class="card-details">
+                        <b>${u.full_name}, ${u.age}</b><br>
+                        <i>"${u.bio}"</i>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <button onclick="handleLikeMeAction(${u.id}, 'pass')" style="width:40px;height:40px;border-radius:50%;background:#fff;border:2px solid #fd5068;color:#fd5068;padding:0;font-size:16px; margin:0;" title="Bỏ qua">❌</button>
-                        <button onclick="handleLikeMeAction(${u.id}, 'like')" style="width:40px;height:40px;border-radius:50%;background:#fff;border:2px solid #2ecc71;color:#2ecc71;padding:0;font-size:16px; margin:0;" title="Thích lại">💖</button>
+                        <button onclick="handleLikeMeAction(${u.id}, 'pass')" class="btn-action btn-pass" style="width:50px; height:50px; font-size:1.2rem;">❌</button>
+                        <button onclick="handleLikeMeAction(${u.id}, 'like')" class="btn-action btn-like" style="width:50px; height:50px; font-size:1.2rem;">💖</button>
                     </div>
                 </div>
             `;
@@ -117,10 +115,7 @@ async function handleLikeMeAction(targetId, action) {
         loadLikesMe();
     } catch (e) { alert("Lỗi khi phản hồi!"); }
 }
-
-// =====================================
 // 3. NGHIỆP VỤ DANH SÁCH MATCH & CHAT
-// =====================================
 async function loadMatchList() {
     const res = await fetch(`${API_URL}/matches/${currentUserId}`);
     const matches = await res.json();
@@ -129,7 +124,16 @@ async function loadMatchList() {
     if (matches.length === 0) { listDiv.innerHTML = '<p style="text-align:center; color:#888; margin-top:20px;">Chưa có match nào 😢</p>'; return; }
     matches.forEach(m => {
         const initial = m.other_user_name.charAt(0).toUpperCase();
-        listDiv.innerHTML += `<div class="match-item" onclick="openChat(${m.match_id}, '${m.other_user_name}')"><div class="match-avatar">${initial}</div><div><b>${m.other_user_name}</b><br><span style="font-size:12px;color:#888;">Bấm để nhắn tin</span></div></div>`;
+        listDiv.innerHTML += `
+            <div class="user-card-horizontal" onclick="openChat(${m.match_id}, '${m.other_user_name}')" style="cursor: pointer;">
+                <div class="avatar-mini">${initial}</div>
+                <div class="card-details">
+                    <b>${m.other_user_name}</b><br>
+                    <span style="font-size:12px;color:var(--text-dim);">Nhấn để bắt đầu trò chuyện</span>
+                </div>
+                <div style="color: var(--primary);">💬</div>
+            </div>
+        `;
     });
 }
 

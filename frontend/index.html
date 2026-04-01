@@ -3,101 +3,164 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Dating App - Clean Code</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dating App - Premium PC Expericence</title>
+    <!-- Google Fonts: Inter & Lexend -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Lexend:wght@900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-    <div id="auth-screen" class="container" style="height: auto;">
-        <div id="login-form">
-            <h2 style="color: #fd5068; text-align: center;">Đăng Nhập</h2>
-            <input type="email" id="loginEmail" placeholder="Email">
-            <input type="password" id="loginPass" placeholder="Mật khẩu">
-            <button type="button" onclick="handleLogin()">Đăng Nhập</button>
-            <div class="auth-footer">Chưa có tài khoản? <span class="text-link"
-                    onclick="switchAuthView('register-step-1')">Đăng ký ngay</span></div>
-        </div>
+    <!-- SCREEN: AUTHENTICATION (Login / Register) -->
+    <div id="auth-screen">
+        <div class="auth-card">
 
-        <div id="register-step-1" class="hidden">
-            <h2 style="color: #fd5068; text-align: center;">Tạo Tài Khoản</h2>
-            <input type="email" id="regEmail" placeholder="Email">
-            <input type="password" id="regPass" placeholder="Mật khẩu">
-            <input type="text" id="regName" placeholder="Họ và tên">
-            <button type="button" onclick="goToRegStep2()">Tiếp tục ➡</button>
-            <div class="auth-footer"><span class="text-link" onclick="switchAuthView('login-form')">Quay lại Đăng
-                    nhập</span></div>
-        </div>
+            <!-- FORM: LOGIN -->
+            <div id="login-form">
+                <h2>Welcome Back</h2>
+                <input type="email" id="loginEmail" placeholder="Email của bạn">
+                <input type="password" id="loginPass" placeholder="Mật khẩu">
+                <button type="button" onclick="handleLogin()">Đăng Nhập</button>
+                <div class="auth-footer">Chưa có tài khoản? <span class="text-link"
+                        onclick="switchAuthView('register-step-1')">Đăng ký ngay</span></div>
+            </div>
 
-        <div id="register-step-2" class="hidden">
-            <h2 style="color: #fd5068; text-align: center;">Hồ Sơ</h2>
-            <input type="number" id="regAge" placeholder="Tuổi (VD: 20)">
-            <select id="regGender">
-                <option value="male">Nam</option>
-                <option value="female">Nữ</option>
-            </select>
-            <input type="text" id="regBio" placeholder="Viết 1 câu giới thiệu...">
-            <button type="button" onclick="handleRegister()" style="background: #28a745;">Hoàn Tất</button>
-            <button type="button" class="btn-secondary" onclick="switchAuthView('register-step-1')">⬅ Quay lại</button>
+            <!-- FORM: REGISTER STEP 1 -->
+            <div id="register-step-1" class="hidden">
+                <h2>Tạo Tài Khoản</h2>
+                <input type="email" id="regEmail" placeholder="Email của bạn">
+                <input type="password" id="regPass" placeholder="Mật khẩu">
+                <input type="text" id="regName" placeholder="Họ và tên">
+                <button type="button" onclick="goToRegStep2()">Tiếp tục ➡</button>
+                <div class="auth-footer"><span class="text-link" onclick="switchAuthView('login-form')">Quay lại Đăng
+                        nhập</span></div>
+            </div>
+
+            <!-- FORM: REGISTER STEP 2 -->
+            <div id="register-step-2" class="hidden">
+                <h2>Hoàn thiện Hồ Sơ</h2>
+                <input type="number" id="regAge" placeholder="Tuổi (VD: 20)">
+                <select id="regGender">
+                    <option value="male">Nam</option>
+                    <option value="female">Nữ</option>
+                    <option value="other">Khác</option>
+                </select>
+                <input type="text" id="regBio" placeholder="Viết 1 câu giới thiệu về bạn...">
+                <button type="button" onclick="handleRegister()" style="background: #2ecc71;">Hoàn Tất</button>
+                <button type="button" class="btn-secondary" onclick="switchAuthView('register-step-1')">⬅ Quay lại</button>
+            </div>
+
         </div>
     </div>
 
-    <div id="user-screen" class="container hidden">
-        <div class="top-nav">
-            <button type="button" id="nav-swipe" class="active" onclick="switchAppTab('swipe')">Khám Phá</button>
-            <button type="button" id="nav-likes" onclick="switchAppTab('likes')">Lượt Thích</button>
-            <button type="button" id="nav-matches" onclick="switchAppTab('matches')">Tin Nhắn</button>
-        </div>
+    <!-- SCREEN: MAIN APPLICATION (PC Layout) -->
+    <div id="user-screen" class="hidden">
 
-        <div id="tab-swipe">
-            <div id="swipe-card" class="swipe-card hidden">
-                <h2 id="card-name" style="margin: 0;">Tên</h2>
-                <p id="card-bio" style="color: #666; font-style: italic; min-height: 40px;"></p>
-                <div class="action-buttons">
-                    <button type="button" class="btn-circle" style="color: #fd5068; border-color: #fd5068;"
-                        onclick="handleSwipe('pass')">❌</button>
-                    <button type="button" class="btn-circle" style="color: #2ecc71; border-color: #2ecc71;"
-                        onclick="handleSwipe('like')">💖</button>
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">DATING.IO</div>
+            <nav class="nav-links">
+                <div id="nav-swipe" class="nav-item active" onclick="switchAppTab('swipe')">
+                    <span>✨</span> Khám Phá
                 </div>
-            </div>
-            <div id="no-more-users" style="text-align: center; color: #888; padding-top: 50px;">
-                <h1>📡</h1>
-                <p>Đã hết người dùng mới.</p>
-            </div>
-        </div>
+                <div id="nav-likes" class="nav-item" onclick="switchAppTab('likes')">
+                    <span>💖</span> Lượt Thích
+                </div>
+                <div id="nav-matches" class="nav-item" onclick="switchAppTab('matches')">
+                    <span>💬</span> Tin Nhắn
+                </div>
+            </nav>
 
-        <div id="tab-likes" class="hidden" style="overflow-y: auto; flex-grow: 1;">
-            <h3 style="text-align:center; color:#fd5068; margin-top: 0;">Ai đó đã thích bạn!</h3>
-            <div id="likes-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
-        </div>
-
-        <div id="tab-matches" class="hidden" style="overflow-y: auto; flex-grow: 1;">
-            <div id="match-list"></div>
-        </div>
-
-        <div id="tab-chat" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
-            <div class="chat-header">
-                <button type="button" class="btn-secondary" style="width: auto; padding: 5px 10px; margin: 0 10px 0 0;"
-                    onclick="switchAppTab('matches')">⬅ Back</button>
-                <b id="chat-partner-name" style="flex-grow: 1;">Chat</b>
-                <button type="button" style="background: #ff4b4b; width: auto; padding: 5px 10px; margin: 0;"
-                    onclick="unmatch()">💔 Unmatch</button>
+            <div class="logout-container">
+                <button type="button" onclick="logout()" class="btn-secondary">Đăng Xuất</button>
             </div>
-            <div class="chat-box" id="chat-box"></div>
-            <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Nhập tin nhắn..."
-                    onkeypress="if(event.key === 'Enter') sendMessage()">
-                <button type="button" style="width: 80px; margin: 0;" onclick="sendMessage()">Gửi</button>
-            </div>
-        </div>
+        </aside>
 
-        <button type="button" onclick="logout()" class="btn-secondary" style="margin-top: auto;">Đăng Xuất</button>
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <!-- TAB: SWIPE (DISCOVERY) -->
+            <section id="tab-swipe">
+                <div id="swipe-card" class="swipe-card hidden">
+                    <div class="card-img-placeholder">👤</div>
+                    <div class="card-info">
+                        <h2 id="card-name">Tên, 20</h2>
+                        <p id="card-bio">"Đây là lời giới thiệu của tôi..."</p>
+                    </div>
+                    <div class="swipe-actions">
+                        <button type="button" class="btn-action btn-pass" onclick="handleSwipe('pass')">❌</button>
+                        <button type="button" class="btn-action btn-like" onclick="handleSwipe('like')">💖</button>
+                    </div>
+                </div>
+
+                <div id="no-more-users" class="empty-state">
+                    <h1>📡</h1>
+                    <h2>Đã hết người dùng mới</h2>
+                    <p>Hãy quay lại sau để tìm thêm những người bạn mới nhé!</p>
+                </div>
+            </section>
+
+            <!-- TAB: LIKES ME -->
+            <section id="tab-likes" class="hidden" style="flex-grow: 1;">
+                <div class="header-area">
+                    <h2 style="margin-bottom: 2rem;">Những người đã thích bạn</h2>
+                </div>
+                <div id="likes-list">
+                    <!-- Cards will be injected here via app.js -->
+                </div>
+            </section>
+
+            <!-- TAB: MATCHES LIST -->
+            <section id="tab-matches" class="hidden" style="flex-grow: 1;">
+                <div class="header-area">
+                    <h2 style="margin-bottom: 2rem;">Tương hợp của bạn</h2>
+                </div>
+                <div id="match-list">
+                    <!-- Matches will be injected here via app.js -->
+                </div>
+            </section>
+
+            <!-- TAB: CHAT INTERFACE -->
+            <section id="tab-chat" class="hidden">
+                <div class="chat-header">
+                    <button type="button" class="btn-secondary" style="width: auto; padding: 10px 20px; font-size: 0.9rem;"
+                        onclick="switchAppTab('matches')">⬅ Quay lại</button>
+                    <div style="flex-grow: 1; text-align: center;">
+                        <h3 id="chat-partner-name" style="margin: 0;">Partner Name</h3>
+                        <span style="font-size: 0.8rem; color: #2ecc71;">Đang trực tuyến</span>
+                    </div>
+                    <button type="button" style="background: #ff4b4b; width: auto; padding: 10px 20px; font-size: 0.9rem;"
+                        onclick="unmatch()">💔 Hủy Match</button>
+                </div>
+
+                <div class="chat-box" id="chat-box"></div>
+
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Viết tin nhắn cho người ấy..."
+                        onkeypress="if(event.key === 'Enter') sendMessage()">
+                    <button type="button" onclick="sendMessage()">Gửi</button>
+                </div>
+            </section>
+
+        </main>
     </div>
 
+    <!-- SCRIPTS -->
     <script src="source/config.js"></script>
     <script src="source/ui.js"></script>
     <script src="source/auth.js"></script>
     <script src="source/app.js"></script>
+
+    <!-- Custom inline script for small button styling adjustments from JS -->
+    <script>
+        // Override any class injection logic from JS if needed to match new CSS
+        // The original code uses .active on top-nav buttons, but now we use .nav-item.active
+        // I need to update ui.js or app.js as well because they target nav-swipe, nav-likes, etc.
+    </script>
 </body>
 
 </html>
