@@ -1,4 +1,4 @@
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "https://dating-app-838i.onrender.com";
 
 // Biến toàn cục lưu trạng thái người dùng đang đăng nhập
 let currentUserId = null;

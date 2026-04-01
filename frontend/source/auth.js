@@ -1,11 +1,30 @@
-// Xử lý nút "Tiếp tục" ở form Đăng ký bước 1
-function goToRegStep2() {
-    const email = document.getElementById('regEmail').value;
-    const pass = document.getElementById('regPass').value;
-    const name = document.getElementById('regName').value;
+// Biến hỗ trợ kiểm tra định dạng Email (Regular Expression)
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// ==========================================
+// Xử lý nút "Tiếp tục" ở form Đăng ký bước 1
+// ==========================================
+function goToRegStep2() {
+    // Thêm .trim() để cắt bỏ khoảng trắng ở 2 đầu nếu người dùng cố tình nhập toàn dấu cách
+    const email = document.getElementById('regEmail').value.trim();
+    const pass = document.getElementById('regPass').value;
+    const name = document.getElementById('regName').value.trim();
+
+    // 1. Ràng buộc bỏ trống
     if (!email || !pass || !name) {
-        alert("Vui lòng điền đủ thông tin bước 1!");
+        alert("⚠️ Vui lòng điền đủ thông tin bước 1!");
+        return;
+    }
+
+    // 2. Ràng buộc định dạng Email
+    if (!emailRegex.test(email)) {
+        alert("⚠️ Định dạng email không hợp lệ (Ví dụ đúng: ten@gmail.com)!");
+        return;
+    }
+
+    // 3. Ràng buộc độ dài Mật khẩu
+    if (pass.length < 6) {
+        alert("⚠️ Mật khẩu phải có ít nhất 6 ký tự để đảm bảo an toàn!");
         return;
     }
 
@@ -16,16 +35,27 @@ function goToRegStep2() {
     switchAuthView('register-step-2');
 }
 
+// ==========================================
 // Xử lý gửi toàn bộ dữ liệu lên Backend
+// ==========================================
 async function handleRegister() {
+    const ageInput = document.getElementById('regAge').value;
+    const age = parseInt(ageInput);
+
+    // 4. Ràng buộc độ Tuổi (Rất quan trọng cho App hẹn hò)
+    if (!ageInput || isNaN(age) || age < 18 || age > 100) {
+        alert("⚠️ Bạn phải từ 18 tuổi trở lên để tham gia ứng dụng này (18 - 100)!");
+        return;
+    }
+
     // Gom dữ liệu từ Bước 1 và Bước 2
     const finalData = {
         email: tempRegData.email,
         password: tempRegData.password,
         full_name: tempRegData.full_name,
-        age: parseInt(document.getElementById('regAge').value) || 18,
+        age: age,
         gender: document.getElementById('regGender').value,
-        bio: document.getElementById('regBio').value,
+        bio: document.getElementById('regBio').value.trim(),
         role: "user"
     };
 
@@ -38,24 +68,35 @@ async function handleRegister() {
 
         if (res.ok) {
             alert("🎉 Đăng ký thành công! Hãy đăng nhập nhé.");
-            // Reset form và quay về màn hình Đăng nhập
+            // Reset form
             document.getElementById('regEmail').value = '';
             document.getElementById('regPass').value = '';
+            document.getElementById('regName').value = '';
+            document.getElementById('regAge').value = '';
+            document.getElementById('regBio').value = '';
             switchAuthView('login-form');
         } else {
-            alert("Email này đã tồn tại hoặc có lỗi xảy ra!");
+            const errorData = await res.json();
+            alert(`❌ Lỗi: ${errorData.detail || "Email này đã tồn tại!"}`);
         }
     } catch (error) {
-        alert("Lỗi kết nối đến Server!");
+        alert("📡 Lỗi kết nối đến Server!");
     }
 }
 
+// ==========================================
 // Xử lý Đăng nhập
+// ==========================================
 async function handleLogin() {
-    const data = {
-        email: document.getElementById('loginEmail').value,
-        password: document.getElementById('loginPass').value
-    };
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPass').value;
+
+    if (!email || !password) {
+        alert("⚠️ Vui lòng nhập email và mật khẩu!");
+        return;
+    }
+
+    const data = { email: email, password: password };
 
     try {
         const res = await fetch(`${API_URL}/login`, {
@@ -65,7 +106,7 @@ async function handleLogin() {
         });
 
         if (!res.ok) {
-            alert("Sai email hoặc mật khẩu!");
+            alert("❌ Sai email hoặc mật khẩu!");
             return;
         }
 
@@ -74,12 +115,10 @@ async function handleLogin() {
 
         // Đăng nhập thành công -> Vào màn hình chính
         switchScreen('user-screen');
-
-        // (Sau này gọi hàm loadSwipeUsers() ở file app.js tại đây)
-        switchScreen('user-screen');
         switchAppTab('swipe');
+
     } catch (err) {
-        alert("Không thể kết nối đến Server!");
+        alert("📡 Không thể kết nối đến Server!");
     }
 }
 
@@ -89,5 +128,5 @@ function logout() {
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPass').value = '';
     switchScreen('auth-screen');
-    switchAuthView('login-form'); // Đảm bảo luôn hiện form login khi ra ngoài
+    switchAuthView('login-form');
 }
