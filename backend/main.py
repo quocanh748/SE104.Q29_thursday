@@ -6,13 +6,29 @@ from pydantic import BaseModel
 from datetime import datetime
 import enum
 import uvicorn
+import os
 
+# ==========================================
 # 1. CẤU HÌNH DATABASE
-SQLALCHEMY_DATABASE_URL = "sqlite:///./database/dating_app.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+# ==========================================
+NEON_URL = "postgresql://neondb_owner:npg_bjwfum1hcQB6@ep-shiny-hall-a182opu4-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+
+# Đọc link từ Server Render (nếu có), nếu không có thì dùng link Neon mặc định ở trên
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", NEON_URL)
+
+# Logic khởi tạo Engine thông minh
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    # Nếu dùng SQLite thì mới cần check_same_thread
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    # Render đôi khi cấp link bắt đầu bằng "postgres://", SQLAlchemy cần "postgresql://"
+    if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+        SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    # Nếu dùng PostgreSQL (Neon/Render) thì KHÔNG CÓ check_same_thread
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
-
 class RoleEnum(enum.Enum):
     admin, user = "admin", "user"
 
